@@ -12,7 +12,7 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
-# Custom CSS for better styling - Dark theme compatible
+
 st.markdown("""
 <style>
     .main-header {
@@ -667,22 +667,26 @@ def plot_airfoil_visualization(airfoil, angle_of_attack, stall_warning, CL, CD):
     chord_y = [0.5 - 0.5 * sin_a, 0.5 + 0.5 * sin_a]
     ax.plot(chord_x, chord_y, '--', color='#64748b', lw=1, alpha=0.5)
     
-    # Draw lift arrow
+     # Draw lift arrow (direction flips when CL is negative)
     if abs(CL) > 0.01:
         lift_len = min(abs(CL) * 0.15, 0.3) * np.sign(CL)
         ax.annotate('', xy=(0.5, 0.5 + lift_len), xytext=(0.5, 0.5),
                    arrowprops=dict(arrowstyle='->', color='#16a34a', lw=3))
         ax.text(0.52, 0.5 + lift_len, 'Lift', fontsize=10, fontweight='bold', color='#16a34a')
     
-    # Draw drag arrow
+    # Draw drag arrow (points to the right, opposing forward motion)
     drag_len = min(CD * 3, 0.25)
-    ax.annotate('', xy=(0.5 - drag_len, 0.5), xytext=(0.5, 0.5),
+    ax.annotate('', xy=(0.5 + drag_len, 0.5), xytext=(0.5, 0.5),
                arrowprops=dict(arrowstyle='->', color='#dc2626', lw=3))
-    ax.text(0.5 - drag_len - 0.05, 0.52, 'Drag', fontsize=10, fontweight='bold', color='#dc2626', ha='right')
+    ax.text(0.5 + drag_len + 0.02, 0.52, 'Drag', fontsize=10, fontweight='bold', color='#dc2626', ha='left')
     
-    # Pressure labels
-    ax.text(0.5, 0.75, 'Low Pressure ↑', ha='center', fontsize=9, color='#2563eb', fontweight='bold', alpha=0.7)
-    ax.text(0.5, 0.25, 'High Pressure ↓', ha='center', fontsize=9, color='#dc2626', fontweight='bold', alpha=0.7)
+    # Pressure labels (swap when lift is negative)
+    if CL >= 0:
+        ax.text(0.5, 0.75, 'Low Pressure ↑', ha='center', fontsize=9, color='#2563eb', fontweight='bold', alpha=0.7)
+        ax.text(0.5, 0.25, 'High Pressure ↓', ha='center', fontsize=9, color='#dc2626', fontweight='bold', alpha=0.7)
+    else:
+        ax.text(0.5, 0.75, 'High Pressure ↓', ha='center', fontsize=9, color='#dc2626', fontweight='bold', alpha=0.7)
+        ax.text(0.5, 0.25, 'Low Pressure ↑', ha='center', fontsize=9, color='#2563eb', fontweight='bold', alpha=0.7)
     
     # Angle of attack arc
     arc_angles = np.linspace(0, -angle_of_attack, 20)
